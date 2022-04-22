@@ -11,7 +11,7 @@ use Firebase\JWT\Key;
 $config = new Config([]);
 
 
-require_once "../vendor/autoload.php";
+require_once "./vendor/autoload.php";
 $loader = new Loader();
 $loader->registerNamespaces(
     [
@@ -32,6 +32,30 @@ $container->set(
 );
 $prod = new Api\Models\Robots();
 $app = new Micro($container);
+// $app->before(
+//     function () use ($app) {
+//         if (!str_contains($_SERVER['REQUEST_URI'], 'gettoken')) {
+//             $token = $app->request->getQuery("token");
+//             if (!$token) {
+//                 echo 'Provide token in URL"';
+//                 die;
+//             }
+//             $key = 'example_key';
+//             try {
+//                 $decoded = JWT::decode($token, new Key($key, 'HS256'));
+
+//             } catch (\Firebase\JWT\ExpiredException $e) {
+//                 echo 'Caught exception: ',  $e->getMessage(), "\n";
+//                 die;
+//             }
+//             if ($decoded->role != 'admin') {
+//                 echo 'You Are Not Authorized';
+//                 die;
+//             }
+//         }
+//     }
+// );
+
 
 $app->get(
     '/api/search/{name}',
@@ -49,10 +73,17 @@ $app->post(
 );
 
 $app->get(
-    '/api/gettoken/{role}',
+    '/api/gettoken',
     [
         $prod,
         'gettoken'
+    ]
+);
+$app->get(
+    '/api/product/list',
+    [
+        $prod,
+        'list'
     ]
 );
 $app->handle(

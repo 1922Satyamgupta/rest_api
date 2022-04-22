@@ -11,7 +11,11 @@ class Robots extends Controller
     public function add()
     {
         $insert = $this->request->getPost();
-        $data = $this->mongo->rest_api->products->insertOne([
+        $key = "example_key";
+        $bearer = $this->request->get('token');
+        $jwt = JWT::decode($bearer, new Key($key, 'HS256'));
+        if (isset($jwt)) {
+        $data = $this->mongo->demo->products->insertOne([
             'name' => $insert['name'],
             'price' => $insert['price'],
             'category' => $insert['category'],
@@ -19,6 +23,7 @@ class Robots extends Controller
         ]);
         echo "<pre>";
         print_r($data);
+    }
     }
     public function search($name = "")
     {
@@ -31,7 +36,7 @@ class Robots extends Controller
         if ($jwt->role == 'admin') {
             foreach ($value as $key => $val) {
 
-                $data = $this->mongo->rest_api->products->findOne(['name' => $val]);
+                $data = $this->mongo->demo->products->findOne(['name' => $val]);
                 foreach ($data as $k => $v) {
                     $getdata = json_encode($v);
                     echo $getdata;
@@ -41,17 +46,25 @@ class Robots extends Controller
             echo "Access denied";
         }
     }
-    public function gettoken($role)
+    public function gettoken()
     {
-        $key = "Admin_Key";
+        $key = "example_key";
         $payload = array(
             "iss" => "http://example.org",
             "aud" => "http://example.com",
             "iat" => 1356999524,
-            "nbf" => 1357000000,
-            "role" => $role,
+            "exp" => time()*24+3600,
+            "role" => 'admin',
         );
         $jwt = JWT::encode($payload, $key, 'HS256');
         echo $jwt;
+    }
+    public function list()
+    {
+        $productlist = $this->mongo->demo->products->find();
+        foreach ($productlist as $key => $value) {
+            $val[] = $value;
+        }
+        echo json_encode($val);
     }
 }
